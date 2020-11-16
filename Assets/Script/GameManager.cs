@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
     public Color greenColor;
     public bool shotTrigger, shotable;
     public Quaternion QI = Quaternion.identity;
-    public float groundY = -59.72f;
+    public float groundY = -56;
     public Vector3 veryFirstPos;
     
 
@@ -52,7 +52,6 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        score = 500;
         if (null == instance)
         {
             instance = this;
@@ -62,8 +61,10 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-
         CameraRect();
+
+        BlockGenerator();
+        BestScoreText.text = "최고기록 : " + PlayerPrefs.GetInt("BestScore").ToString();
     }
 
     public void ReStart() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -77,7 +78,7 @@ public class GameManager : MonoBehaviour
         if (PlayerPrefs.GetInt("BestScore", 0) < score)
         {
             PlayerPrefs.SetInt("BestScore", score);
-            BestScoreText.text = "최고기록: " + PlayerPrefs.GetInt("BestScore").ToString();
+            BestScoreText.text = "최고기록 : " + PlayerPrefs.GetInt("BestScore").ToString();
             BestScoreText.color = greenColor;
             isNewRecord = true;
         }
@@ -157,10 +158,8 @@ public class GameManager : MonoBehaviour
                 FinalScoreText.text = "최종점수 : " + score.ToString();
                 if (isNewRecord) newRecordText.gameObject.SetActive(true);
 
-                Camera.main.GetComponent<Animator>().SetTrigger("shake");
+                //Camera.main.GetComponent<Animator>().SetTrigger("shake");
                 S_GameOver.Play();
-
-
             }
             else
             {
@@ -221,7 +220,7 @@ public class GameManager : MonoBehaviour
         if(shotTrigger && shotable)
         {
             shotTrigger = false;
-            //블록생성
+            BlockGenerator();
             timeDelay = 0;
 
             //
@@ -248,7 +247,7 @@ public class GameManager : MonoBehaviour
             Arrow.transform.position = veryFirstPos;
             Arrow.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(gap.y, gap.x) * Mathf.Rad2Deg);
             BallPreview.transform.position =
-                Physics2D.CircleCast(new Vector2(Mathf.Clamp(veryFirstPos.x, -54, -54), groundY), 1.7f, gap, 10000, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("Block")).centroid;
+                Physics2D.CircleCast(new Vector2(Mathf.Clamp(veryFirstPos.x, -54, 54), groundY), 1.7f, gap, 10000, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("Block")).centroid;
 
             RaycastHit2D hit = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
 
@@ -296,7 +295,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator BallCountTextShow(int greenBallCount)
     {
-        BallCountTextObj.transform.position = new Vector3(Mathf.Clamp(veryFirstPos.x, -49.9f, 49.9f), -69, 0);
+        BallCountTextObj.transform.position = new Vector3(Mathf.Clamp(veryFirstPos.x, -49.9f, 49.9f), -65, 0);
         BallCountText.text = "x" + BallGroup.childCount.ToString();
 
         yield return new WaitForSeconds(0.17f);
@@ -307,7 +306,7 @@ public class GameManager : MonoBehaviour
         if(greenBallCount != 0)
         {
             BallPlusTextObj.SetActive(true);
-            BallPlusTextObj.transform.position = new Vector3(Mathf.Clamp(veryFirstPos.x, -49.9f, 49.9f), -52, 0);
+            BallPlusTextObj.transform.position = new Vector3(Mathf.Clamp(veryFirstPos.x, -49.9f, 49.9f), -47, 0);
             BallPlusText.text = "+" + greenBallCount.ToString();
             S_Plus.Play();
 
@@ -339,6 +338,11 @@ public class GameManager : MonoBehaviour
         {
             rect.height = scaleheight;
             rect.y = (1f - scaleWidth) / 2f;
+        }
+        else 
+        {
+            rect.width = scaleWidth;
+            rect.x = (1f - scaleheight) / 2f;
         }
         camera.rect = rect;
     }

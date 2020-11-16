@@ -13,7 +13,7 @@ public class Ball : MonoBehaviour
     {
         GameManager.Instance.shotTrigger = true;
         isMoving = true;
-        RB.AddForce(pos * 7000);
+        RB.AddForce(pos * 14000);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -42,8 +42,7 @@ public class Ball : MonoBehaviour
 
         if(Col.CompareTag("Ground"))
         {
-            Debug.Log(collision.gameObject.name);
-
+            Debug.Log("s");
             RB.velocity = Vector2.zero;
             transform.position = new Vector2(collision.contacts[0].point.x, GameManager.Instance.groundY);
             GameManager.Instance.VeryFirstPosSet(transform.position);
@@ -60,7 +59,7 @@ public class Ball : MonoBehaviour
         {
             Text BlockText = collision.transform.GetChild(0).GetComponentInChildren<Text>();
             int blockValue = int.Parse(BlockText.text) - 1;
-            //GameManager.Instance.BlockColorChange();
+            GameManager.Instance.BlockColorChange();
 
             for(int i = 0; i < GameManager.Instance.S_Block.Length; i++)
             {
@@ -71,7 +70,7 @@ public class Ball : MonoBehaviour
             if(blockValue > 0)
             {
                 BlockText.text = blockValue.ToString();
-                Col.GetComponent<Animator>().SetTrigger("shock");
+                //Col.GetComponent<Animator>().SetTrigger("shock");
             }
             else
             {
@@ -83,15 +82,14 @@ public class Ball : MonoBehaviour
 
     private IEnumerator Trigger(Collider2D col)
     {
-            Debug.Log("0");
-        if (col.gameObject.CompareTag("GreenOrb"))
+        if (col.gameObject.CompareTag("Coinorb"))
         {
             Destroy(col.gameObject);
             Destroy(Instantiate(GameManager.Instance.p_particleGreen, col.transform.position, GameManager.Instance.QI), 1);
 
             GameManager.Instance.S_GreenOrb.Play();
             Transform TR = Instantiate(Greenball, col.transform.position, GameManager.Instance.QI).transform;
-            TR.SetParent(GameObject.Find("GreenBallGroup").transform);
+            TR.SetParent(GameObject.Find("CoinGroup").transform);
             Vector3 targetPos = new Vector3(TR.position.x, GameManager.Instance.groundY, 0);
             while (true)
             {
