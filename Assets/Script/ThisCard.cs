@@ -84,6 +84,7 @@ public class ThisCard : MonoBehaviour , IBeginDragHandler, IEndDragHandler, IDra
             GameManager.Instance.coin -= cost;
             GameManager.Instance.CoinText.text = GameManager.Instance.coin.ToString();
             GameManager.Instance.cardID = id;
+            GameManager.Instance.temp = GameManager.Instance.BallGroup.childCount;
             GameManager.Instance.CardEffect();
         }
         thisID = Random.Range(1, 4);

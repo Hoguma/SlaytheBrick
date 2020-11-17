@@ -46,12 +46,15 @@ public class GameManager : MonoBehaviour
     public int coin;
     public int cardID;
     public int COcount = 0;
+    public int temp;
 
     public int coinObtain = 1;
     Vector3 firstPos, secondPos, gap;
     int score, timerCount, launchIndex;
     bool timerStart, isDie, isNewRecord, isBlockMoving;
     bool isGBallMove = true;
+    bool shadow = false;
+    bool ice = false;
     float timeDelay;
 
 
@@ -60,7 +63,6 @@ public class GameManager : MonoBehaviour
         if (null == instance)
         {
             instance = this;
-            DontDestroyOnLoad(this.gameObject);
         }
         else
         {
@@ -68,7 +70,8 @@ public class GameManager : MonoBehaviour
         }
         CameraRect();
 
-        BlockGenerator();
+        BlockGenerator(); 
+            
         BestScoreText.text = "최고기록 : " + PlayerPrefs.GetInt("BestScore").ToString();
     }
 
@@ -225,7 +228,10 @@ public class GameManager : MonoBehaviour
         if(shotTrigger && shotable)
         {
             shotTrigger = false;
-            BlockGenerator();
+            if (!ice)
+                BlockGenerator();
+            else
+                ice = false;
             timeDelay = 0;
 
 
@@ -242,6 +248,17 @@ public class GameManager : MonoBehaviour
                     coinObtain = 1;
                 }
             }
+
+            if(shadow)
+            {
+                shadow = false;
+                for(int i = 0; i < BallGroup.childCount / 2; i++)
+                {
+                    Destroy(BallGroup.GetChild(i).gameObject);
+                }
+                BallCountText.text = "x" + BallGroup.childCount.ToString();
+            }
+
         }
 
         //
@@ -250,7 +267,7 @@ public class GameManager : MonoBehaviour
 
         //입력
         bool isMouse = Input.GetMouseButton(0);
-        if(isMouse) //&& !EventSystem.current.IsPointerOverGameObject())
+        if(isMouse && !EventSystem.current.IsPointerOverGameObject())
         {
             if (isGBallMove)
             {
@@ -282,11 +299,11 @@ public class GameManager : MonoBehaviour
             isGBallMove = true;
 
         //터치중 일때 표시선 온
-        BallPreview.SetActive(isMouse);
-        Arrow.SetActive(isMouse);
+        BallPreview.SetActive(isMouse && !EventSystem.current.IsPointerOverGameObject());
+        Arrow.SetActive(isMouse&& !EventSystem.current.IsPointerOverGameObject());
 
         //터치를 땟을때 초기화
-        if(Input.GetMouseButtonUp(0))
+        if(Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             if ((secondPos - firstPos).magnitude < 1) return;
 
@@ -384,10 +401,18 @@ public class GameManager : MonoBehaviour
         switch(cardID)
         {
             case 0:
+
                 break;
             case 1:
+                ice = true;
                 break;
             case 2:
+                for(int i = 0; i < temp; i++)
+                {
+                    Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                }
+                BallCountText.text = "x" + BallGroup.childCount.ToString();
+                shadow = true;
                 break;
             case 3:
                 coinObtain = 3;
