@@ -56,7 +56,7 @@ public class ThisCard : MonoBehaviour , IBeginDragHandler, IEndDragHandler, IDra
     // Start is called before the first frame update
     void Start()
     {
-        thisID = Random.Range(1, 4);
+        thisID = Random.Range(0, 5);
         thisCard[0] = CardDatabase.cardList[thisID];
     }
 
@@ -86,8 +86,8 @@ public class ThisCard : MonoBehaviour , IBeginDragHandler, IEndDragHandler, IDra
             GameManager.Instance.cardID = id;
             GameManager.Instance.temp = GameManager.Instance.BallGroup.childCount;
             GameManager.Instance.CardEffect();
+            thisID = Random.Range(0, 5);
+            thisCard[0] = CardDatabase.cardList[thisID];
         }
-        thisID = Random.Range(1, 4);
-        thisCard[0] = CardDatabase.cardList[thisID];
     }
 }

@@ -69,12 +69,16 @@ public class Ball : MonoBehaviour
             if(blockValue > 0)
             {
                 BlockText.text = blockValue.ToString();
-                //Col.GetComponent<Animator>().SetTrigger("shock");
             }
             else
             {
                 Destroy(Col);
                 Destroy(Instantiate(GameManager.Instance.p_particleRed, collision.transform.position, Quaternion.identity), 1);
+                if(GameManager.Instance.gold == true)
+                {
+                    GameManager.Instance.coin += 3;
+                    GameManager.Instance.CoinText.text = GameManager.Instance.coin.ToString();
+                }
             }
         }
     }

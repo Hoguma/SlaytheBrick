@@ -55,11 +55,13 @@ public class GameManager : MonoBehaviour
     bool isGBallMove = true;
     bool shadow = false;
     bool ice = false;
+    public bool gold = false;
     float timeDelay;
 
 
     void Awake()
     {
+        Time.timeScale = 1;
         if (null == instance)
         {
             instance = this;
@@ -166,7 +168,6 @@ public class GameManager : MonoBehaviour
                 FinalScoreText.text = "최종점수 : " + score.ToString();
                 if (isNewRecord) newRecordText.gameObject.SetActive(true);
 
-                //Camera.main.GetComponent<Animator>().SetTrigger("shake");
                 S_GameOver.Play();
             }
             else
@@ -207,7 +208,7 @@ public class GameManager : MonoBehaviour
         if (isDie) return;
 
         //클릭하면 클릭한 지점을 저장
-        if(Input.GetMouseButtonDown(0) && firstPos == Vector3.zero)
+        if(Input.GetMouseButtonDown(0) && firstPos == Vector3.zero && !EventSystem.current.IsPointerOverGameObject())
         {
             firstPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
         }
@@ -258,7 +259,8 @@ public class GameManager : MonoBehaviour
                 }
                 BallCountText.text = "x" + BallGroup.childCount.ToString();
             }
-
+            if (gold)
+                gold = false;
         }
 
         //
@@ -290,6 +292,7 @@ public class GameManager : MonoBehaviour
 
             RaycastHit2D hit1 = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
 
+            Debug.Log(firstPos);
             MouseLR.SetPosition(0, firstPos);
             MouseLR.SetPosition(1, secondPos);
             BallLR.SetPosition(0, veryFirstPos);
@@ -401,7 +404,33 @@ public class GameManager : MonoBehaviour
         switch(cardID)
         {
             case 0:
-
+                Debug.Log("아수라");
+                int life = Random.Range(0, 999);
+                if (life < 150)
+                    Debug.Log("꽝");
+                else if (life >= 150 || life < 400)
+                    Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                else if (life >= 400 || life < 900)
+                {
+                    for (int i = 0; i < 2; i++)
+                        Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                }
+                else if (life >= 900 || life < 970)
+                {
+                    for (int i = 0; i < 3; i++)
+                        Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                }
+                else if (life >= 970 || life < 999)
+                {
+                    for (int i = 0; i < 4; i++)
+                        Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                }
+                else if (life == 999)
+                {
+                    for (int i = 0; i < 5; i++)
+                        Instantiate(p_ball, veryFirstPos, QI).transform.SetParent(BallGroup);
+                }
+                BallCountText.text = "x" + BallGroup.childCount.ToString();
                 break;
             case 1:
                 ice = true;
@@ -416,6 +445,9 @@ public class GameManager : MonoBehaviour
                 break;
             case 3:
                 coinObtain = 3;
+                break;
+            case 4:
+                gold = true;
                 break;
         }    
     }
