@@ -22,13 +22,13 @@ public class GameManager : MonoBehaviour
 
     [Header("GameObject")]
     public GameObject p_ball, p_block, p_particleBlue, p_particleGreen, p_particleRed, p_greenOrb;
-    public GameObject BallPreview, Arrow, GameOverPanel, BallCountTextObj, BallPlusTextObj;
+    public GameObject BallPreview, Arrow, GameOverPanel, BallCountTextObj, BallPlusTextObj, Greenball;
 
     //[Header("Transform")]
     public Transform GreenBallGroup, BlockGroup, BallGroup;
 
     //[Header("Text")]
-    public Text BestScoreText, ScoreText, BallCountText, BallPlusText, FinalScoreText, newRecordText;
+    public Text BestScoreText, ScoreText, BallCountText, BallPlusText, FinalScoreText, newRecordText, CoinText;
 
     //[Header("Sound")]
     public AudioSource S_GameOver, S_GreenOrb, S_Plus;
@@ -43,10 +43,11 @@ public class GameManager : MonoBehaviour
     public float groundY = -56;
     public Vector3 veryFirstPos;
     
-
+    public int coin;
     Vector3 firstPos, secondPos, gap;
     int score, timerCount, launchIndex;
     bool timerStart, isDie, isNewRecord, isBlockMoving;
+    bool isGBallMove = true;
     float timeDelay;
 
 
@@ -223,10 +224,10 @@ public class GameManager : MonoBehaviour
             BlockGenerator();
             timeDelay = 0;
 
-            //
-            StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
+
             for (int i = 0; i < GreenBallGroup.childCount; i++)
                 StartCoroutine(GreenBallMove(GreenBallGroup.GetChild(i)));
+            StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
         }
 
         //
@@ -237,7 +238,14 @@ public class GameManager : MonoBehaviour
         bool isMouse = Input.GetMouseButton(0);
         if(isMouse)
         {
-            //
+            if (isGBallMove)
+            {
+                isGBallMove = false;
+                for (int i = 0; i < GreenBallGroup.childCount; i++)
+                    StartCoroutine(GreenBallMove(GreenBallGroup.GetChild(i)));
+                StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
+            }
+
             secondPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
             if ((secondPos - firstPos).magnitude < 1) return;
 
@@ -256,7 +264,9 @@ public class GameManager : MonoBehaviour
             BallLR.SetPosition(0, veryFirstPos);
             BallLR.SetPosition(1, (Vector3)hit.point - gap * 1.5f);
         }
-        
+        else
+            isGBallMove = true;
+
         //터치중 일때 표시선 온
         BallPreview.SetActive(isMouse);
         Arrow.SetActive(isMouse);
@@ -293,15 +303,23 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void BallAdd()
+    {
+        if (coin >= 1)
+        {
+            Transform TR = Instantiate(Greenball, new Vector3(Random.Range(-54f, 54f), groundY, 0), GameManager.Instance.QI).transform;
+            TR.SetParent(GameObject.Find("CoinGroup").transform);
+            coin--;
+            CoinText.text = coin.ToString();
+        }
+    }
+
     IEnumerator BallCountTextShow(int greenBallCount)
     {
         BallCountTextObj.transform.position = new Vector3(Mathf.Clamp(veryFirstPos.x, -49.9f, 49.9f), -65, 0);
         BallCountText.text = "x" + BallGroup.childCount.ToString();
 
         yield return new WaitForSeconds(0.17f);
-
-        if (BallGroup.childCount > score) Destroy(BallGroup.GetChild(BallGroup.childCount - 1).gameObject);
-        BallCountText.text = "x" + BallGroup.childCount.ToString();
 
         if(greenBallCount != 0)
         {

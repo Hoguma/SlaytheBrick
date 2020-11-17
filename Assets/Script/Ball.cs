@@ -42,7 +42,6 @@ public class Ball : MonoBehaviour
 
         if(Col.CompareTag("Ground"))
         {
-            Debug.Log("s");
             RB.velocity = Vector2.zero;
             transform.position = new Vector2(collision.contacts[0].point.x, GameManager.Instance.groundY);
             GameManager.Instance.VeryFirstPosSet(transform.position);
@@ -88,15 +87,9 @@ public class Ball : MonoBehaviour
             Destroy(Instantiate(GameManager.Instance.p_particleGreen, col.transform.position, GameManager.Instance.QI), 1);
 
             GameManager.Instance.S_GreenOrb.Play();
-            Transform TR = Instantiate(Greenball, col.transform.position, GameManager.Instance.QI).transform;
-            TR.SetParent(GameObject.Find("CoinGroup").transform);
-            Vector3 targetPos = new Vector3(TR.position.x, GameManager.Instance.groundY, 0);
-            while (true)
-            {
-                yield return null;
-                TR.position = Vector3.MoveTowards(TR.position, targetPos, 2.5f);
-                if (TR.position == targetPos) yield break;
-            }
+            GameManager.Instance.coin += 1;
+            GameManager.Instance.CoinText.text = GameManager.Instance.coin.ToString();
+            yield return null;
         }
     }
 }
