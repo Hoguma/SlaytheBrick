@@ -87,7 +87,7 @@ public class Ball : MonoBehaviour
             Destroy(Instantiate(GameManager.Instance.p_particleGreen, col.transform.position, GameManager.Instance.QI), 1);
 
             GameManager.Instance.S_GreenOrb.Play();
-            GameManager.Instance.coin += 1;
+            GameManager.Instance.coin += 1 * GameManager.Instance.coinObtain;
             GameManager.Instance.CoinText.text = GameManager.Instance.coin.ToString();
             yield return null;
         }

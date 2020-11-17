@@ -29,21 +29,28 @@ public class ThisCard : MonoBehaviour , IBeginDragHandler, IEndDragHandler, IDra
     public void OnBeginDrag(PointerEventData eventData)
     {
         firstPos = transform.position;
+        transform.localScale *= 1.8f;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = eventData.position;
+        Vector3 drag = Camera.main.ScreenToWorldPoint(eventData.position);
+        transform.position = new Vector3(drag.x, drag.y, 0);
     }
 
     public void OnDrop(PointerEventData eventData)
     {
-       
+        if (transform.position.y >= -550f)
+        { 
+            Debug.Log("drop");
+            UseCard();
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         transform.position = firstPos;
+        transform.localScale /= 1.8f;
     }
 
     // Start is called before the first frame update
@@ -70,4 +77,16 @@ public class ThisCard : MonoBehaviour , IBeginDragHandler, IEndDragHandler, IDra
         thatImage.sprite = thisSprite;
     }
 
+    void UseCard()
+    {
+        if (GameManager.Instance.coin >= cost)
+        { 
+            GameManager.Instance.coin -= cost;
+            GameManager.Instance.CoinText.text = GameManager.Instance.coin.ToString();
+            GameManager.Instance.cardID = id;
+            GameManager.Instance.CardEffect();
+        }
+        thisID = Random.Range(1, 4);
+        thisCard[0] = CardDatabase.cardList[thisID];
+    }
 }

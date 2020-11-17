@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
 
 public class GameManager : MonoBehaviour
 {
@@ -44,6 +44,10 @@ public class GameManager : MonoBehaviour
     public Vector3 veryFirstPos;
     
     public int coin;
+    public int cardID;
+    public int COcount = 0;
+
+    public int coinObtain = 1;
     Vector3 firstPos, secondPos, gap;
     int score, timerCount, launchIndex;
     bool timerStart, isDie, isNewRecord, isBlockMoving;
@@ -228,6 +232,16 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i < GreenBallGroup.childCount; i++)
                 StartCoroutine(GreenBallMove(GreenBallGroup.GetChild(i)));
             StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
+
+            if (coinObtain == 3)
+            {
+                COcount++;
+                if (COcount >= 5)
+                { 
+                    COcount = 0;
+                    coinObtain = 1;
+                }
+            }
         }
 
         //
@@ -236,7 +250,7 @@ public class GameManager : MonoBehaviour
 
         //입력
         bool isMouse = Input.GetMouseButton(0);
-        if(isMouse)
+        if(isMouse) //&& !EventSystem.current.IsPointerOverGameObject())
         {
             if (isGBallMove)
             {
@@ -257,12 +271,12 @@ public class GameManager : MonoBehaviour
             BallPreview.transform.position =
                 Physics2D.CircleCast(new Vector2(Mathf.Clamp(veryFirstPos.x, -54, 54), groundY), 1.7f, gap, 10000, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("Block")).centroid;
 
-            RaycastHit2D hit = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
+            RaycastHit2D hit1 = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
 
             MouseLR.SetPosition(0, firstPos);
             MouseLR.SetPosition(1, secondPos);
             BallLR.SetPosition(0, veryFirstPos);
-            BallLR.SetPosition(1, (Vector3)hit.point - gap * 1.5f);
+            BallLR.SetPosition(1, (Vector3)hit1.point - gap * 1.5f); 
         }
         else
             isGBallMove = true;
@@ -363,5 +377,21 @@ public class GameManager : MonoBehaviour
             rect.x = (1f - scaleheight) / 2f;
         }
         camera.rect = rect;
+    }
+
+    public void CardEffect()
+    {
+        switch(cardID)
+        {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                coinObtain = 3;
+                break;
+        }    
     }
 }
