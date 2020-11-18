@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-        CameraRect();
+        //CameraRect();
 
         BlockGenerator(); 
             
@@ -204,6 +204,8 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+
         // 죽으면 실행 안함
         if (isDie) return;
 
