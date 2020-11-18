@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-        //CameraRect();
+        Screen.SetResolution(1080, 1920, true);
 
         BlockGenerator(); 
             
@@ -210,9 +210,11 @@ public class GameManager : MonoBehaviour
         if (isDie) return;
 
         //클릭하면 클릭한 지점을 저장
-        if(Input.GetMouseButtonDown(0) && firstPos == Vector3.zero && !EventSystem.current.IsPointerOverGameObject())
+        if(Input.touchCount > 0 || Input.GetMouseButtonDown(0) && firstPos == Vector3.zero)
         {
-            firstPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
+
+            if(!EventSystem.current.IsPointerOverGameObject() || !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+                firstPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
         }
 
 
@@ -271,55 +273,63 @@ public class GameManager : MonoBehaviour
 
         //입력
         bool isMouse = Input.GetMouseButton(0);
-        if(isMouse && !EventSystem.current.IsPointerOverGameObject())
+        if (Input.touchCount > 0 || isMouse)
         {
-            if (isGBallMove)
+            if (!EventSystem.current.IsPointerOverGameObject() || !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
             {
-                isGBallMove = false;
-                for (int i = 0; i < GreenBallGroup.childCount; i++)
-                    StartCoroutine(GreenBallMove(GreenBallGroup.GetChild(i)));
-                StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
+                if (isGBallMove)
+                {
+                    isGBallMove = false;
+                    for (int i = 0; i < GreenBallGroup.childCount; i++)
+                        StartCoroutine(GreenBallMove(GreenBallGroup.GetChild(i)));
+                    StartCoroutine(BallCountTextShow(GreenBallGroup.childCount));
+                }
+
+                secondPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
+                if ((secondPos - firstPos).magnitude < 1) return;
+
+                gap = (secondPos - firstPos).normalized;
+                gap = new Vector3(gap.y >= 0 ? gap.x : gap.x >= 0 ? 1 : -1, Mathf.Clamp(gap.y, 0.2f, 1), 0);
+
+                Arrow.transform.position = veryFirstPos;
+                Arrow.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(gap.y, gap.x) * Mathf.Rad2Deg);
+                BallPreview.transform.position =
+                    Physics2D.CircleCast(new Vector2(Mathf.Clamp(veryFirstPos.x, -54, 54), groundY), 1.7f, gap, 10000, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("Block")).centroid;
+
+                RaycastHit2D hit1 = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
+
+                MouseLR.SetPosition(0, firstPos);
+                MouseLR.SetPosition(1, secondPos);
+                BallLR.SetPosition(0, veryFirstPos);
+                BallLR.SetPosition(1, (Vector3)hit1.point - gap * 1.5f);
             }
-
-            secondPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
-            if ((secondPos - firstPos).magnitude < 1) return;
-
-            gap = (secondPos - firstPos).normalized;
-            gap = new Vector3(gap.y >= 0 ? gap.x : gap.x >= 0 ? 1 : -1, Mathf.Clamp(gap.y, 0.2f, 1), 0);
-
-            Arrow.transform.position = veryFirstPos;
-            Arrow.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(gap.y, gap.x) * Mathf.Rad2Deg);
-            BallPreview.transform.position =
-                Physics2D.CircleCast(new Vector2(Mathf.Clamp(veryFirstPos.x, -54, 54), groundY), 1.7f, gap, 10000, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("Block")).centroid;
-
-            RaycastHit2D hit1 = Physics2D.Raycast(veryFirstPos, gap, 10000, 1 << LayerMask.NameToLayer("Wall"));
-
-            Debug.Log(firstPos);
-            MouseLR.SetPosition(0, firstPos);
-            MouseLR.SetPosition(1, secondPos);
-            BallLR.SetPosition(0, veryFirstPos);
-            BallLR.SetPosition(1, (Vector3)hit1.point - gap * 1.5f); 
         }
         else
             isGBallMove = true;
 
         //터치중 일때 표시선 온
-        BallPreview.SetActive(isMouse && !EventSystem.current.IsPointerOverGameObject());
-        Arrow.SetActive(isMouse&& !EventSystem.current.IsPointerOverGameObject());
+        BallPreview.SetActive(isMouse && !EventSystem.current.IsPointerOverGameObject() || Input.touchCount > 0 && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId));
+        Arrow.SetActive(isMouse&& !EventSystem.current.IsPointerOverGameObject() || Input.touchCount > 0 && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId));
 
         //터치를 땟을때 초기화
-        if(Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
+        if (Input.touchCount > 0 || Input.GetMouseButtonUp(0))
         {
-            if ((secondPos - firstPos).magnitude < 1) return;
+            Debug.Log("hi");
 
-            MouseLR.SetPosition(0, Vector3.zero);
-            MouseLR.SetPosition(1, Vector3.zero);
-            BallLR.SetPosition(0, Vector3.zero);
-            BallLR.SetPosition(1, Vector3.zero);
+            if (!EventSystem.current.IsPointerOverGameObject() || !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+            {
+                Debug.Log("bye");
+                if ((secondPos - firstPos).magnitude < 1) return;
 
-            timerStart = true;
-            veryFirstPos = Vector3.zero;
-            firstPos = Vector3.zero;
+                MouseLR.SetPosition(0, Vector3.zero);
+                MouseLR.SetPosition(1, Vector3.zero);
+                BallLR.SetPosition(0, Vector3.zero);
+                BallLR.SetPosition(1, Vector3.zero);
+
+                timerStart = true;
+                veryFirstPos = Vector3.zero;
+                firstPos = Vector3.zero;
+            }
         }
     }
 
@@ -452,5 +462,10 @@ public class GameManager : MonoBehaviour
                 gold = true;
                 break;
         }    
+    }
+
+    void Dragend()
+    {
+        
     }
 }
